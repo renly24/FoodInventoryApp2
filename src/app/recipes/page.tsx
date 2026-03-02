@@ -2,7 +2,6 @@ import { getRecipes } from '@/actions/recipes';
 import Link from 'next/link';
 import RecipeRegisterModal from '@/components/recipes/RecipeRegisterModal';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function RecipesPage() {

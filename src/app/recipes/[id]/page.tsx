@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import RecipeIngredientRegisterModal from '@/components/recipes/RecipeIngredientRegisterModal';
 
-export const runtime = 'edge';
+
 export const dynamic = 'force-dynamic';
 
 export default async function RecipeDetailPage({ params }: { params: Promise<{ id: string }> }) {

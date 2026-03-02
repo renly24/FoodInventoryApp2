@@ -2,7 +2,6 @@ import { getShoppingItems } from '@/actions/shopping';
 import ShoppingRegisterModal from '@/components/shopping/ShoppingRegisterModal';
 import ShoppingListDisplay from '@/components/shopping/ShoppingListDisplay';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function ShoppingPage() {
