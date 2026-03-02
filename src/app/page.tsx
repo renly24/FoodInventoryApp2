@@ -1,52 +1,106 @@
-import Image from "next/image";
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { createDb } from '@/db';
+import { inventoryItems, shoppingListItems, recipes, meals } from '@/db/schema';
+import { count, eq } from 'drizzle-orm';
+import Link from 'next/link';
 
-export default function Home() {
+// Next.jsのキャッシュを無効化して常に最新データを取得する
+export const dynamic = 'force-dynamic';
+
+const DUMMY_USER_ID = 'dummy-user-123';
+
+export default async function DashboardPage() {
+	let inventoryCount = 0;
+	let shoppingCount = 0;
+	let recipeCount = 0;
+	let mealsCount = 0;
+
+	try {
+		// OpenNext Cloudflare のコンテキストからバインディングを取得
+		const { env } = await getCloudflareContext({ async: true });
+		const d1 = env.DB;
+		const db = createDb(d1);
+
+		// 各テーブルのレコード数を取得
+		const [invResult] = await db.select({ value: count() }).from(inventoryItems).where(eq(inventoryItems.userId, DUMMY_USER_ID));
+		const [shopResult] = await db.select({ value: count() }).from(shoppingListItems).where(eq(shoppingListItems.userId, DUMMY_USER_ID));
+		const [recResult] = await db.select({ value: count() }).from(recipes).where(eq(recipes.userId, DUMMY_USER_ID));
+		const [mealResult] = await db.select({ value: count() }).from(meals).where(eq(meals.userId, DUMMY_USER_ID));
+
+		inventoryCount = invResult.value;
+		shoppingCount = shopResult.value;
+		recipeCount = recResult.value;
+		mealsCount = mealResult.value;
+
+	} catch (error) {
+		console.error("Failed to fetch dashboard summaries:", error);
+	}
+
 	return (
-		<div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-			<main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-				<Image className="dark:invert" src="/next.svg" alt="Next.js logo" width={180} height={38} priority />
-				<ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-					<li className="mb-2 tracking-[-.01em]">
-						Get started by editing{" "}
-						<code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-							src/app/page.tsx
-						</code>
-						.
-					</li>
-					<li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-				</ol>
+		<main className="p-6">
+			<header className="mb-8 mt-4">
+				<h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ダッシュボード</h1>
+				<p className="text-gray-500 mt-2 text-sm">現在の状況サマリー</p>
+			</header>
 
-				<div className="flex gap-4 items-center flex-col sm:flex-row">
-					<a
-						className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-						href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Read our docs
-					</a>
+			<div className="grid grid-cols-2 gap-4">
+				{/* 買い物リスト サマリー */}
+				<Link href="/shopping" className="block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
+					<div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+						<div className="flex items-center justify-between mb-3">
+							<span className="text-2xl">🛒</span>
+						</div>
+						<h2 className="text-sm font-semibold text-orange-900 mb-1">買い物リスト</h2>
+						<p className="text-3xl font-bold text-orange-600">{shoppingCount}<span className="text-sm font-normal text-orange-800 ml-1">件</span></p>
+					</div>
+				</Link>
+
+				{/* 在庫 サマリー */}
+				<Link href="/inventory" className="block focus:outline-none focus:ring-2 focus:ring-green-500 rounded-2xl">
+					<div className="bg-green-50 border border-green-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+						<div className="flex items-center justify-between mb-3">
+							<span className="text-2xl">📦</span>
+						</div>
+						<h2 className="text-sm font-semibold text-green-900 mb-1">現在の在庫</h2>
+						<p className="text-3xl font-bold text-green-600">{inventoryCount}<span className="text-sm font-normal text-green-800 ml-1">件</span></p>
+					</div>
+				</Link>
+
+				{/* レシピ サマリー */}
+				<Link href="/recipes" className="block focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-2xl">
+					<div className="bg-purple-50 border border-purple-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+						<div className="flex items-center justify-between mb-3">
+							<span className="text-2xl">🍳</span>
+						</div>
+						<h2 className="text-sm font-semibold text-purple-900 mb-1">登録レシピ</h2>
+						<p className="text-3xl font-bold text-purple-600">{recipeCount}<span className="text-sm font-normal text-purple-800 ml-1">件</span></p>
+					</div>
+				</Link>
+
+				{/* 食事記録 サマリー */}
+				<Link href="/meals" className="block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
+					<div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+						<div className="flex items-center justify-between mb-3">
+							<span className="text-2xl">🍽️</span>
+						</div>
+						<h2 className="text-sm font-semibold text-blue-900 mb-1">食事記録</h2>
+						<p className="text-3xl font-bold text-blue-600">{mealsCount}<span className="text-sm font-normal text-blue-800 ml-1">回</span></p>
+					</div>
+				</Link>
+			</div>
+
+			{/* クイックアクション等のセクションを追加可能 */}
+			<section className="mt-10">
+				<h3 className="text-lg font-bold text-gray-800 mb-4">クイックアクション</h3>
+				<div className="flex flex-col gap-3">
+					<Link href="/inventory/register" className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">
+						<span>＋ 新しい在庫を追加</span>
+					</Link>
+					<Link href="/meals/new" className="flex items-center justify-center gap-2 w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
+						<span>📝 食事を記録する</span>
+					</Link>
 				</div>
-			</main>
-			<footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-					Learn
-				</a>
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-					Go to nextjs.org →
-				</a>
-			</footer>
-		</div>
+			</section>
+		</main>
 	);
 }
