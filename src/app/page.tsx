@@ -38,9 +38,14 @@ export default async function DashboardPage() {
 
 	return (
 		<main className="p-6">
-			<header className="mb-8 mt-4">
-				<h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ダッシュボード</h1>
-				<p className="text-gray-500 mt-2 text-sm">現在の状況サマリー</p>
+			<header className="mb-8 mt-4 flex items-start justify-between">
+				<div>
+					<h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ダッシュボード</h1>
+					<p className="text-gray-500 mt-2 text-sm">現在の状況サマリー</p>
+				</div>
+				<Link href="/about" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+					<span className="text-xl">ℹ️</span>
+				</Link>
 			</header>
 
 			<div className="grid grid-cols-2 gap-4">
