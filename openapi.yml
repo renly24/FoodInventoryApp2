@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: 食品管理アプリ API (Food Inventory App API)
+  description: analysis.mdの機能要件に基づいた、在庫、買い物リスト、レシピ、食事記録を管理するためのAPI仕様。
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: ローカル開発サーバー
+tags:
+  - name: Inventory
+    description: 在庫管理機能 (家にある食品・日用品)
+  - name: Shopping
+    description: 買い物リスト管理機能
+  - name: Recipe
+    description: レシピ管理機能
+  - name: Meal
+    description: 食事記録管理機能
+
+paths:
+  /inventory:
+    get:
+      tags: [Inventory]
+      summary: 在庫アイテム一覧取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+    post:
+      tags: [Inventory]
+      summary: 在庫アイテム登録
+      description: 新しいアイテムを登録します。同じ名前のアイテムが既に存在する場合は、数量が自動加算されます。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+
+  /inventory/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags: [Inventory]
+      summary: 在庫アイテム更新
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+    delete:
+      tags: [Inventory]
+      summary: 在庫アイテム削除
+      responses:
+        '204':
+          description: 削除成功
+
+  /shopping-list:
+    get:
+      tags: [Shopping]
+      summary: 買い物リスト取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShoppingItem'
+    post:
+      tags: [Shopping]
+      summary: 買い物リストアイテム登録
+      description: 重複チェックを行い、既存の場合はアラート（フロント側）に応じた更新等の処理を想定。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingItemInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingItem'
+
+  /shopping-list/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags: [Shopping]
+      summary: 買い物リストアイテム更新
+      description: 主に購入済み(purchased)のステータス変更に使用。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingItemInput'
+      responses:
+        '200':
+          description: 更新成功
+    delete:
+      tags: [Shopping]
+      summary: 買い物リストアイテム削除
+      responses:
+        '204':
+          description: 削除成功
+
+  /recipes:
+    get:
+      tags: [Recipe]
+      summary: レシピ一覧取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+    post:
+      tags: [Recipe]
+      summary: レシピ登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+
+  /recipes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags: [Recipe]
+      summary: レシピ更新
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '200':
+          description: 更新成功
+    delete:
+      tags: [Recipe]
+      summary: レシピ削除
+      responses:
+        '204':
+          description: 削除成功
+
+  /meals:
+    get:
+      tags: [Meal]
+      summary: 食事記録一覧取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MealLog'
+    post:
+      tags: [Meal]
+      summary: 食事記録登録
+      description: 記録時、使用したレシピや食材に基づいて在庫数を自動で減少させます。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealLogInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealLog'
+
+  /meals/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      tags: [Meal]
+      summary: 食事記録削除
+      responses:
+        '204':
+          description: 削除成功
+
+components:
+  schemas:
+    InventoryItemInput:
+      type: object
+      required:
+        - name
+        - quantity
+      properties:
+        name:
+          type: string
+          description: アイテム名
+        quantity:
+          type: number
+          description: 数量
+        unit:
+          type: string
+          description: 単位（個、g、mlなど）
+        price:
+          type: number
+          description: 単価
+        category:
+          type: string
+          description: カテゴリ（食品、日用品など）
+        memo:
+          type: string
+          description: メモ
+        priority:
+          type: integer
+          description: 優先度
+
+    InventoryItem:
+      allOf:
+        - $ref: '#/components/schemas/InventoryItemInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    ShoppingItemInput:
+      type: object
+      required:
+        - name
+        - quantity
+      properties:
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        expectedPrice:
+          type: number
+          description: 予定単価
+        category:
+          type: string
+        memo:
+          type: string
+        priority:
+          type: integer
+        isPurchased:
+          type: boolean
+          description: 購入済みフラグ
+          default: false
+
+    ShoppingItem:
+      allOf:
+        - $ref: '#/components/schemas/ShoppingItemInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    Ingredient:
+      type: object
+      required:
+        - name
+        - quantity
+      properties:
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        inventoryItemId:
+          type: string
+          format: uuid
+          description: 在庫アイテムとの連携用ID（任意）
+
+    RecipeInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: 料理名
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+
+    Recipe:
+      allOf:
+        - $ref: '#/components/schemas/RecipeInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    MealLogInput:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date-time
+        recipeId:
+          type: string
+          format: uuid
+          description: レシピから記録した場合のレシピID
+        name:
+          type: string
+          description: レシピ以外の自由入力での食事名
+        ingredientsUsed:
+          type: array
+          description: 使用した個別の在庫消費量（自動在庫更新用）
+          items:
+            type: object
+            properties:
+              inventoryItemId:
+                type: string
+                format: uuid
+              quantityUsed:
+                type: number
+
+    MealLog:
+      allOf:
+        - $ref: '#/components/schemas/MealLogInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time

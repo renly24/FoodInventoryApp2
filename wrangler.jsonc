@@ -37,7 +37,7 @@
 	},
 	"d1_databases": [
 		{
-			"binding": "food_inventory_db",
+			"binding": "DB",
 			"database_name": "food-inventory-db",
 			"database_id": "a6ce78e6-5029-43a8-aabe-6f1b64760cfd",
 			"migrations_dir": "drizzle"
