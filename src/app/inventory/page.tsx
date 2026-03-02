@@ -2,7 +2,6 @@ import { getInventoryItems } from '@/actions/inventory';
 import InventoryRegisterModal from '@/components/inventory/InventoryRegisterModal';
 import InventoryListDisplay from '@/components/inventory/InventoryListDisplay';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic'; // キャッシュを無効化して常に最新を取得
 
 export default async function InventoryPage() {

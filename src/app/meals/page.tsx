@@ -2,7 +2,6 @@ import { getMeals } from '@/actions/meals';
 import Link from 'next/link';
 import MealRegisterModal from '@/components/meals/MealRegisterModal';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function MealsPage() {
