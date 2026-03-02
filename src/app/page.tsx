@@ -98,10 +98,10 @@ export default async function DashboardPage() {
 			<section className="mt-10">
 				<h3 className="text-lg font-bold text-gray-800 mb-4">クイックアクション</h3>
 				<div className="flex flex-col gap-3">
-					<Link href="/inventory/register" className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">
+					<Link href="/inventory?action=register" className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">
 						<span>＋ 新しい在庫を追加</span>
 					</Link>
-					<Link href="/meals/new" className="flex items-center justify-center gap-2 w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
+					<Link href="/meals?action=register" className="flex items-center justify-center gap-2 w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
 						<span>📝 食事を記録する</span>
 					</Link>
 				</div>

@@ -1,10 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { addInventoryItem } from '@/actions/inventory';
 
 export default function InventoryRegisterModal({ emptyState = false }: { emptyState?: boolean }) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('action') === 'register') {
+            setIsOpen(true);
+            // URLからパラメータを削除して、リロード時に再度開かないようにする（任意）
+            // router.replace('/inventory');
+        }
+    }, [searchParams]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
