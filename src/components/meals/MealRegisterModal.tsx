@@ -1,10 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { addMeal } from '@/actions/meals';
 
 export default function MealRegisterModal({ emptyState = false }: { emptyState?: boolean }) {
+    const searchParams = useSearchParams();
     const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('action') === 'register') {
+            setIsOpen(true);
+        }
+    }, [searchParams]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
