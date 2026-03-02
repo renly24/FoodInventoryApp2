@@ -6,14 +6,23 @@ import { recipes, recipeIngredients } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-const DUMMY_USER_ID = 'dummy-user-123';
+import { auth } from '@/auth';
+
+async function getRequiredSession() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("認証が必要です");
+    }
+    return session.user.id;
+}
 
 export async function getRecipes() {
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        return await db.select().from(recipes).where(eq(recipes.userId, DUMMY_USER_ID)).orderBy(desc(recipes.createdAt));
+        return await db.select().from(recipes).where(eq(recipes.userId, userId)).orderBy(desc(recipes.createdAt));
     } catch (error) {
         console.error("Failed to fetch recipes:", error);
         return [];
@@ -45,21 +54,22 @@ export async function getRecipeIngredients(recipeId: string) {
     }
 }
 
-// サーバーアクション: レシピの追加
+// サーバーアクション: 料理の追加
 export async function addRecipe(formData: FormData) {
     const name = formData.get('name') as string;
 
     if (!name) {
-        return { error: "レシピ名が入力されていません" };
+        return { error: "料理名が入力されていません" };
     }
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
         await db.insert(recipes).values({
             id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
+            userId: userId,
             name,
         });
 
@@ -69,11 +79,11 @@ export async function addRecipe(formData: FormData) {
         return { success: true };
     } catch (error) {
         console.error("Failed to add recipe:", error);
-        return { error: "レシピの追加に失敗しました" };
+        return { error: "料理の追加に失敗しました" };
     }
 }
 
-// サーバーアクション: レシピへの材料追加
+// サーバーアクション: 料理への材料追加
 export async function addRecipeIngredient(formData: FormData) {
     const recipeId = formData.get('recipeId') as string;
     const name = formData.get('name') as string;

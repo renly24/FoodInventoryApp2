@@ -86,7 +86,7 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
                                         name="name"
                                         required
                                         placeholder="例: 肉じゃが定食"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -100,7 +100,7 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
                                         name="date"
                                         defaultValue={new Date().toISOString().slice(0, 16)}
                                         required
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 

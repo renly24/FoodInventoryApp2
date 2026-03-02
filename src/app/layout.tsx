@@ -52,7 +52,7 @@ export default function RootLayout({
 						</Link>
 						<Link href="/recipes" className="flex flex-col items-center justify-center w-full h-full text-gray-500 hover:text-blue-600">
 							<span className="text-xl mb-1">🍳</span>
-							<span className="text-[10px]">レシピ</span>
+							<span className="text-[10px]">料理</span>
 						</Link>
 						<Link href="/meals" className="flex flex-col items-center justify-center w-full h-full text-gray-500 hover:text-blue-600">
 							<span className="text-xl mb-1">🍽️</span>

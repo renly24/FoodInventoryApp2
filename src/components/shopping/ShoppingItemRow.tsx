@@ -109,7 +109,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                         defaultValue={item.name}
                                         required
                                         placeholder="例: 牛乳、卵"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -127,7 +127,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                             min="0"
                                             required
                                             placeholder="例: 1"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                     <div>
@@ -140,7 +140,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                             name="unit"
                                             defaultValue={item.unit}
                                             placeholder="例: 個, g"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                             id={`category-${item.id}`}
                                             name="category"
                                             defaultValue={item.category || ""}
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition bg-white text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition bg-white text-gray-900 font-bold"
                                         >
                                             <option value="">選択なし</option>
                                             <option value="食品">食品</option>
@@ -174,7 +174,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                             defaultValue={item.expectedPrice || ""}
                                             min="0"
                                             placeholder="例: 200"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>
@@ -189,7 +189,7 @@ export default function ShoppingItemRow({ item }: { item: any }) {
                                         defaultValue={item.memo || ""}
                                         rows={2}
                                         placeholder="特記事項があれば入力"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 resize-none"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900 resize-none font-bold"
                                     ></textarea>
                                 </div>
 

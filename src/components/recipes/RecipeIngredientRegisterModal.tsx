@@ -79,7 +79,7 @@ export default function RecipeIngredientRegisterModal({ recipeId, emptyState = f
                                         name="name"
                                         required
                                         placeholder="例: じゃがいも"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -96,7 +96,7 @@ export default function RecipeIngredientRegisterModal({ recipeId, emptyState = f
                                             min="0.1"
                                             required
                                             placeholder="例: 1"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                     <div>
@@ -110,7 +110,7 @@ export default function RecipeIngredientRegisterModal({ recipeId, emptyState = f
                                             required
                                             defaultValue="個"
                                             placeholder="例: 個, g"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>

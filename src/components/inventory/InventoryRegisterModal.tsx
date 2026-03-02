@@ -89,7 +89,7 @@ export default function InventoryRegisterModal({ emptyState = false }: { emptySt
                                         name="name"
                                         required
                                         placeholder="例: 牛乳、卵"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -106,7 +106,7 @@ export default function InventoryRegisterModal({ emptyState = false }: { emptySt
                                             min="1"
                                             required
                                             placeholder="例: 1"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                     <div>
@@ -119,7 +119,7 @@ export default function InventoryRegisterModal({ emptyState = false }: { emptySt
                                             name="unit"
                                             defaultValue="個"
                                             placeholder="例: 個, g"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@ export default function InventoryRegisterModal({ emptyState = false }: { emptySt
                                         <select
                                             id="category"
                                             name="category"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white text-gray-900 font-bold"
                                         >
                                             <option value="">選択なし</option>
                                             <option value="食品">食品</option>
@@ -151,7 +151,7 @@ export default function InventoryRegisterModal({ emptyState = false }: { emptySt
                                             name="price"
                                             min="0"
                                             placeholder="例: 200"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>

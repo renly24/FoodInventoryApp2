@@ -6,15 +6,24 @@ import { inventoryItems } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-const DUMMY_USER_ID = 'dummy-user-123';
+import { auth } from '@/auth';
+
+async function getRequiredSession() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("認証が必要です");
+    }
+    return session.user.id;
+}
 
 // サーバーアクション: アイテム一覧の取得
 export async function getInventoryItems() {
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        return await db.select().from(inventoryItems).where(eq(inventoryItems.userId, DUMMY_USER_ID));
+        return await db.select().from(inventoryItems).where(eq(inventoryItems.userId, userId));
     } catch (error) {
         console.error("Failed to fetch inventory:", error);
         return [];
@@ -33,13 +42,14 @@ export async function addInventoryItem(formData: FormData) {
     const quantity = parseFloat(quantityStr);
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
         // 同じ名前のアイテムが既にあるか確認
         const existingItems = await db.select().from(inventoryItems)
             .where(and(
-                eq(inventoryItems.userId, DUMMY_USER_ID),
+                eq(inventoryItems.userId, userId),
                 eq(inventoryItems.name, name)
             ));
 
@@ -55,7 +65,7 @@ export async function addInventoryItem(formData: FormData) {
             // なければ新規作成
             await db.insert(inventoryItems).values({
                 id: crypto.randomUUID(),
-                userId: DUMMY_USER_ID,
+                userId: userId,
                 name,
                 quantity,
                 unit: (formData.get('unit') as string) || '個',

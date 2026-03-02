@@ -6,14 +6,23 @@ import { shoppingListItems, inventoryItems, users } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-const DUMMY_USER_ID = 'dummy-user-123';
+import { auth } from '@/auth';
+
+async function getRequiredSession() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("認証が必要です");
+    }
+    return session.user.id;
+}
 
 export async function getShoppingItems() {
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        return await db.select().from(shoppingListItems).where(eq(shoppingListItems.userId, DUMMY_USER_ID));
+        return await db.select().from(shoppingListItems).where(eq(shoppingListItems.userId, userId));
     } catch (error) {
         console.error("Failed to fetch shopping lists:", error);
         return [];
@@ -32,13 +41,14 @@ export async function addShoppingItem(formData: FormData) {
     const quantity = parseFloat(quantityStr);
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
         // 未購入で同じ名前のアイテムがあるか確認
         const existingItems = await db.select().from(shoppingListItems)
             .where(and(
-                eq(shoppingListItems.userId, DUMMY_USER_ID),
+                eq(shoppingListItems.userId, userId),
                 eq(shoppingListItems.name, name),
                 eq(shoppingListItems.isPurchased, false)
             ));
@@ -55,7 +65,7 @@ export async function addShoppingItem(formData: FormData) {
             // なければ新規作成
             await db.insert(shoppingListItems).values({
                 id: crypto.randomUUID(),
-                userId: DUMMY_USER_ID,
+                userId: userId,
                 name,
                 quantity,
                 unit: (formData.get('unit') as string) || '個',
@@ -155,6 +165,7 @@ export async function purchaseShoppingItem(id: string, formData: FormData) {
     const actualQuantity = parseFloat(actualQuantityStr);
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
@@ -172,7 +183,7 @@ export async function purchaseShoppingItem(id: string, formData: FormData) {
         // 在庫テーブルに同じ名前があるか確認
         const existingInventoryItems = await db.select().from(inventoryItems)
             .where(and(
-                eq(inventoryItems.userId, DUMMY_USER_ID),
+                eq(inventoryItems.userId, userId),
                 eq(inventoryItems.name, item.name)
             ));
 
@@ -189,7 +200,7 @@ export async function purchaseShoppingItem(id: string, formData: FormData) {
             // 在庫になければ新規作成
             await db.insert(inventoryItems).values({
                 id: crypto.randomUUID(),
-                userId: DUMMY_USER_ID,
+                userId: userId,
                 name: item.name,
                 quantity: actualQuantity,
                 unit: item.unit,
@@ -208,7 +219,7 @@ export async function purchaseShoppingItem(id: string, formData: FormData) {
         if (finalPrice && finalPrice > 0) {
             await db.update(users)
                 .set({ totalSpent: sql`${users.totalSpent} + ${finalPrice}` })
-                .where(eq(users.id, DUMMY_USER_ID));
+                .where(eq(users.id, userId));
         }
 
         revalidatePath('/shopping');
