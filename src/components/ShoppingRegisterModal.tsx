@@ -1,19 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { addShoppingItem } from '@/actions/shopping';
 
 export default function ShoppingRegisterModal({ emptyState = false }: { emptyState?: boolean }) {
-    const searchParams = useSearchParams();
     const [isOpen, setIsOpen] = useState(false);
-
-    useEffect(() => {
-        if (searchParams.get('action') === 'register') {
-            setIsOpen(true);
-        }
-    }, [searchParams]);
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +46,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-xl font-bold text-gray-900">買い物リストに追加</h2>

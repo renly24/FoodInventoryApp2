@@ -4,6 +4,8 @@ import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
 export const users = sqliteTable('users', {
     id: text('id').primaryKey(), // Firebase Authentication UID
     email: text('email').notNull(),
+    monthlyBudget: real('monthly_budget').default(0).notNull(),
+    totalSpent: real('total_spent').default(0).notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
 

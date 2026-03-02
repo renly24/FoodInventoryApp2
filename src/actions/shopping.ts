@@ -2,8 +2,8 @@
 
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { shoppingListItems, inventoryItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { shoppingListItems, inventoryItems, users } from '@/db/schema';
+import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 const DUMMY_USER_ID = 'dummy-user-123';
@@ -35,16 +35,35 @@ export async function addShoppingItem(formData: FormData) {
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        await db.insert(shoppingListItems).values({
-            id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
-            name,
-            quantity,
-            unit: (formData.get('unit') as string) || '個',
-            expectedPrice: formData.get('expectedPrice') ? parseFloat(formData.get('expectedPrice') as string) : null,
-            category: formData.get('category') as string || null,
-            memo: formData.get('memo') as string || null,
-        });
+        // 未購入で同じ名前のアイテムがあるか確認
+        const existingItems = await db.select().from(shoppingListItems)
+            .where(and(
+                eq(shoppingListItems.userId, DUMMY_USER_ID),
+                eq(shoppingListItems.name, name),
+                eq(shoppingListItems.isPurchased, false)
+            ));
+
+        if (existingItems.length > 0) {
+            // 既存アイテム（未購入）があれば個数を加算
+            await db.update(shoppingListItems)
+                .set({
+                    quantity: sql`${shoppingListItems.quantity} + ${quantity}`,
+                    updatedAt: new Date()
+                })
+                .where(eq(shoppingListItems.id, existingItems[0].id));
+        } else {
+            // なければ新規作成
+            await db.insert(shoppingListItems).values({
+                id: crypto.randomUUID(),
+                userId: DUMMY_USER_ID,
+                name,
+                quantity,
+                unit: (formData.get('unit') as string) || '個',
+                expectedPrice: formData.get('expectedPrice') ? parseFloat(formData.get('expectedPrice') as string) : null,
+                category: formData.get('category') as string || null,
+                memo: formData.get('memo') as string || null,
+            });
+        }
 
         // 成功時にキャッシュを破棄して画面を更新
         revalidatePath('/shopping');
@@ -147,21 +166,50 @@ export async function purchaseShoppingItem(id: string, formData: FormData) {
         const item = items[0];
 
         // 在庫テーブルに追加
-        await db.insert(inventoryItems).values({
-            id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
-            name: item.name,
-            quantity: actualQuantity,
-            unit: item.unit,
-            price: formData.get('actualPrice') ? parseFloat(formData.get('actualPrice') as string) : null,
-            category: item.category,
-            memo: item.memo,
-        });
+        const actualPriceStr = formData.get('actualPrice') as string;
+        const finalPrice = actualPriceStr ? parseFloat(actualPriceStr) : item.expectedPrice;
+
+        // 在庫テーブルに同じ名前があるか確認
+        const existingInventoryItems = await db.select().from(inventoryItems)
+            .where(and(
+                eq(inventoryItems.userId, DUMMY_USER_ID),
+                eq(inventoryItems.name, item.name)
+            ));
+
+        if (existingInventoryItems.length > 0) {
+            // 在庫にあれば個数加算・（価格等の更新も必要なら検討）
+            await db.update(inventoryItems)
+                .set({
+                    quantity: sql`${inventoryItems.quantity} + ${actualQuantity}`,
+                    price: finalPrice, // 今回の購入価格で上書き、あるいは加重平均などは要検討だが、一旦シンプルに上書き
+                    updatedAt: new Date()
+                })
+                .where(eq(inventoryItems.id, existingInventoryItems[0].id));
+        } else {
+            // 在庫になければ新規作成
+            await db.insert(inventoryItems).values({
+                id: crypto.randomUUID(),
+                userId: DUMMY_USER_ID,
+                name: item.name,
+                quantity: actualQuantity,
+                unit: item.unit,
+                price: finalPrice,
+                category: item.category,
+                memo: item.memo,
+            });
+        }
 
         // 買い物リストのステータスを購入済みに更新
         await db.update(shoppingListItems)
             .set({ isPurchased: true })
             .where(eq(shoppingListItems.id, id));
+
+        // 予算の使用額をユーザーに反映
+        if (finalPrice && finalPrice > 0) {
+            await db.update(users)
+                .set({ totalSpent: sql`${users.totalSpent} + ${finalPrice}` })
+                .where(eq(users.id, DUMMY_USER_ID));
+        }
 
         revalidatePath('/shopping');
         revalidatePath('/inventory');

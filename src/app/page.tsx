@@ -3,6 +3,7 @@ import { createDb } from '@/db';
 import { inventoryItems, shoppingListItems, recipes, meals } from '@/db/schema';
 import { count, eq } from 'drizzle-orm';
 import Link from 'next/link';
+import { getProfile } from '@/actions/users';
 
 // Next.jsのキャッシュを無効化して常に最新データを取得する
 export const dynamic = 'force-dynamic';
@@ -14,8 +15,11 @@ export default async function DashboardPage() {
 	let shoppingCount = 0;
 	let recipeCount = 0;
 	let mealsCount = 0;
+	let userProfile: any = null;
 
 	try {
+		userProfile = await getProfile();
+
 		// OpenNext Cloudflare のコンテキストからバインディングを取得
 		const { env } = await getCloudflareContext({ async: true });
 		const d1 = env.DB;
@@ -38,15 +42,53 @@ export default async function DashboardPage() {
 
 	return (
 		<main className="p-6">
-			<header className="mb-8 mt-4 flex items-start justify-between">
+			<header className="mb-6 mt-4 flex items-start justify-between">
 				<div>
 					<h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ダッシュボード</h1>
 					<p className="text-gray-500 mt-2 text-sm">現在の状況サマリー</p>
 				</div>
-				<Link href="/about" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
-					<span className="text-xl">ℹ️</span>
-				</Link>
+				<div className="flex gap-2">
+					<Link href="/about" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+						<span className="text-xl">ℹ️</span>
+					</Link>
+					<Link href="/profile" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+						<span className="text-xl">👤</span>
+					</Link>
+				</div>
 			</header>
+
+			{/* 予算・支出サマリー */}
+			{userProfile && (
+				<section className="mb-8 p-6 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl shadow-xl text-white overflow-hidden relative">
+					<div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+					<div className="relative z-10">
+						<div className="flex justify-between items-end mb-4">
+							<div>
+								<p className="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">今月の支出状況</p>
+								<div className="flex items-baseline gap-2">
+									<span className="text-4xl font-extrabold">¥{userProfile.totalSpent?.toLocaleString() || 0}</span>
+									<span className="text-indigo-200 text-sm">/ ¥{userProfile.monthlyBudget?.toLocaleString() || 0}</span>
+								</div>
+							</div>
+							<div className="text-right">
+								<p className="text-indigo-100 text-[10px] font-bold uppercase mb-1">残り予算</p>
+								<p className={`text-xl font-bold ${(userProfile.monthlyBudget - userProfile.totalSpent) < 3000 ? 'text-orange-300' : 'text-green-300'}`}>
+									¥{(userProfile.monthlyBudget - userProfile.totalSpent).toLocaleString()}
+								</p>
+							</div>
+						</div>
+
+						{/* プログレスバー */}
+						<div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+							<div
+								className={`h-full rounded-full transition-all duration-1000 ${(userProfile.totalSpent / userProfile.monthlyBudget) > 0.9 ? 'bg-orange-400' : 'bg-green-400'
+									}`}
+								style={{ width: `${Math.min(100, (userProfile.totalSpent / (userProfile.monthlyBudget || 1)) * 100)}%` }}
+							></div>
+						</div>
+					</div>
+				</section>
+			)}
 
 			<div className="grid grid-cols-2 gap-4">
 				{/* 買い物リスト サマリー */}

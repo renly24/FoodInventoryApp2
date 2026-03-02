@@ -3,7 +3,7 @@
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { inventoryItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 const DUMMY_USER_ID = 'dummy-user-123';
@@ -36,16 +36,34 @@ export async function addInventoryItem(formData: FormData) {
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        await db.insert(inventoryItems).values({
-            id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
-            name,
-            quantity,
-            unit: (formData.get('unit') as string) || '個',
-            price: formData.get('price') ? parseFloat(formData.get('price') as string) : null,
-            category: formData.get('category') as string,
-            memo: formData.get('memo') as string,
-        });
+        // 同じ名前のアイテムが既にあるか確認
+        const existingItems = await db.select().from(inventoryItems)
+            .where(and(
+                eq(inventoryItems.userId, DUMMY_USER_ID),
+                eq(inventoryItems.name, name)
+            ));
+
+        if (existingItems.length > 0) {
+            // 既存アイテムがあれば個数を加算
+            await db.update(inventoryItems)
+                .set({
+                    quantity: sql`${inventoryItems.quantity} + ${quantity}`,
+                    updatedAt: new Date()
+                })
+                .where(eq(inventoryItems.id, existingItems[0].id));
+        } else {
+            // なければ新規作成
+            await db.insert(inventoryItems).values({
+                id: crypto.randomUUID(),
+                userId: DUMMY_USER_ID,
+                name,
+                quantity,
+                unit: (formData.get('unit') as string) || '個',
+                price: formData.get('price') ? parseFloat(formData.get('price') as string) : null,
+                category: formData.get('category') as string,
+                memo: formData.get('memo') as string,
+            });
+        }
 
         // 成功時にキャッシュを破棄して画面を更新
         revalidatePath('/inventory');

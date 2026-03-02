@@ -22,6 +22,13 @@
       "when": 1772360940324,
       "tag": "0002_spicy_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1772440171064,
+      "tag": "0003_sleepy_stark_industries",
+      "breakpoints": true
     }
   ]
 }
