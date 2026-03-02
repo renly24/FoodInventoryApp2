@@ -32,8 +32,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
         }),
         providers: [
             GitHub({
-                clientId: env.GITHUB_CLIENT_ID,
-                clientSecret: env.GITHUB_CLIENT_SECRET,
+                clientId: process.env.AUTH_CLIENT_ID,
+                clientSecret: process.env.AUTH_CLIENT_SECRET,
             }),
             Credentials({
                 async authorize(credentials) {
@@ -80,6 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
                 return session;
             },
         },
-        secret: env.AUTH_SECRET,
+        secret: process.env.AUTH_SECRET,
+        trustHost: true,
     }
 })
