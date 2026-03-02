@@ -1,11 +1,64 @@
-import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, real, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import type { AdapterAccount } from '@auth/core/adapters';
 
 // ユーザー情報
 export const users = sqliteTable('users', {
-    id: text('id').primaryKey(), // Firebase Authentication UID
-    email: text('email').notNull(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    name: text('name'),
+    email: text('email').notNull().unique(),
+    emailVerified: integer('email_verified', { mode: 'timestamp' }),
+    image: text('image'),
+    password: text('password'),
+    monthlyBudget: real('monthly_budget').default(0).notNull(),
+    totalSpent: real('total_spent').default(0).notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
+
+export const accounts = sqliteTable(
+    "accounts",
+    {
+        userId: text("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        type: text("type").$type<AdapterAccount["type"]>().notNull(),
+        provider: text("provider").notNull(),
+        providerAccountId: text("provider_account_id").notNull(),
+        refresh_token: text("refresh_token"),
+        access_token: text("access_token"),
+        expires_at: integer("expires_at"),
+        token_type: text("token_type"),
+        scope: text("scope"),
+        id_token: text("id_token"),
+        session_state: text("session_state"),
+    },
+    (account) => ({
+        compoundKey: primaryKey({
+            columns: [account.provider, account.providerAccountId],
+        }),
+    })
+);
+
+export const sessions = sqliteTable("sessions", {
+    sessionToken: text("session_token").primaryKey(),
+    userId: text("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    expires: integer("expires", { mode: "timestamp" }).notNull(),
+});
+
+export const verificationTokens = sqliteTable(
+    "verification_tokens",
+    {
+        identifier: text("identifier").notNull(),
+        token: text("token").notNull(),
+        expires: integer("expires", { mode: "timestamp" }).notNull(),
+    },
+    (v) => ({
+        compositeKey: primaryKey({
+            columns: [v.identifier, v.token],
+        }),
+    })
+);
 
 // 在庫アイテム
 export const inventoryItems = sqliteTable('inventory_items', {
@@ -37,7 +90,7 @@ export const shoppingListItems = sqliteTable('shopping_list_items', {
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
 
-// レシピ
+// 料理
 export const recipes = sqliteTable('recipes', {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -46,7 +99,7 @@ export const recipes = sqliteTable('recipes', {
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
 
-// レシピの材料
+// 料理の材料
 export const recipeIngredients = sqliteTable('recipe_ingredients', {
     id: text('id').primaryKey(),
     recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
@@ -60,7 +113,7 @@ export const recipeIngredients = sqliteTable('recipe_ingredients', {
 export const meals = sqliteTable('meals', {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    recipeId: text('recipe_id'), // レシピ由来の場合の連携IDを追加
+    recipeId: text('recipe_id'), // 料理由来の場合の連携IDを追加
     name: text('name').notNull(), // mealNameから変更
     date: integer('date', { mode: 'timestamp' }).notNull(), // mealDateから変更
     createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),

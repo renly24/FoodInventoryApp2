@@ -20,12 +20,12 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         <main className="p-6">
             <div className="mb-6 mt-4">
                 <Link href="/recipes" className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center mb-4">
-                    <span>← レシピ一覧へ戻る</span>
+                    <span>← 料理一覧へ戻る</span>
                 </Link>
                 <div className="flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-extrabold text-purple-900 tracking-tight">{recipe.name}</h1>
-                        <p className="text-purple-600 mt-1 text-sm font-medium">レシピ詳細と必要な材料</p>
+                        <p className="text-purple-600 mt-1 text-sm font-medium">料理詳細と必要な材料</p>
                     </div>
                 </div>
             </div>

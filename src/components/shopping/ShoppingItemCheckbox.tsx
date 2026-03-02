@@ -51,8 +51,8 @@ export default function ShoppingItemCheckbox({
                 onClick={handleToggle}
                 disabled={isPending}
                 className={`w-6 h-6 rounded flex-shrink-0 flex items-center justify-center border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 z-30 relative ${item.isPurchased
-                        ? 'bg-orange-500 border-orange-500 opacity-80 hover:opacity-100'
-                        : 'border-gray-300 hover:border-orange-400 bg-white'
+                    ? 'bg-orange-500 border-orange-500 opacity-80 hover:opacity-100'
+                    : 'border-gray-300 hover:border-orange-400 bg-white'
                     }`}
                 aria-label={item.isPurchased ? "未購入に戻す" : "購入して在庫に追加"}
             >
@@ -60,7 +60,7 @@ export default function ShoppingItemCheckbox({
             </button>
 
             {isModalOpen && (
-                <div onClick={(e) => e.stopPropagation()} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm cursor-default">
+                <div onClick={(e) => e.stopPropagation()} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md cursor-default">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-orange-50/50">
                             <h2 className="text-xl font-bold text-gray-900">在庫に追加</h2>
@@ -79,8 +79,17 @@ export default function ShoppingItemCheckbox({
                                 </div>
                             )}
                             <p className="text-gray-600 mb-4 text-sm font-medium">
-                                <span className="font-bold text-gray-900">{item.name}</span> を購入済みにし、在庫に追加します。購入数と価格を入力してください。
+                                <span className="font-bold text-gray-900">{item.name}</span> を購入済みにし、在庫に追加します。
                             </p>
+                            {/* 予定金額の表示 */}
+                            {item.expectedPrice && (
+                                <div className="bg-orange-100/50 p-3 rounded-xl mb-4 border border-orange-200">
+                                    <p className="text-xs text-orange-700 font-bold uppercase tracking-wider mb-1">支出予定金額</p>
+                                    <p className="text-xl font-black text-orange-600">
+                                        ¥{(item.expectedPrice || 0).toLocaleString()} <span className="text-xs font-normal text-gray-500">({item.quantity}{item.unit}分)</span>
+                                    </p>
+                                </div>
+                            )}
                             <form action={handlePurchase} className="flex flex-col gap-4">
                                 <div>
                                     <label htmlFor={`actualQuantity-${item.id}`} className="block text-sm font-bold text-gray-700 mb-1">
@@ -91,7 +100,7 @@ export default function ShoppingItemCheckbox({
                                         id={`actualQuantity-${item.id}`}
                                         name="actualQuantity"
                                         defaultValue={item.quantity}
-                                        step="0.1"
+                                        step="0.5"
                                         min="0"
                                         required
                                         className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition text-gray-900"

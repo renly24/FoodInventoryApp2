@@ -6,14 +6,23 @@ import { meals } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-const DUMMY_USER_ID = 'dummy-user-123';
+import { auth } from '@/auth';
+
+async function getRequiredSession() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("認証が必要です");
+    }
+    return session.user.id;
+}
 
 export async function getMeals() {
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        return await db.select().from(meals).where(eq(meals.userId, DUMMY_USER_ID)).orderBy(desc(meals.date));
+        return await db.select().from(meals).where(eq(meals.userId, userId)).orderBy(desc(meals.date));
     } catch (error) {
         console.error("Failed to fetch meals:", error);
         return [];
@@ -30,12 +39,13 @@ export async function addMeal(formData: FormData) {
     }
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
         await db.insert(meals).values({
             id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
+            userId: userId,
             name,
             date: new Date(dateStr),
         });

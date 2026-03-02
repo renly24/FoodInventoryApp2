@@ -34,7 +34,7 @@ export default function RecipeRegisterModal({ emptyState = false }: { emptyState
                     onClick={() => setIsOpen(true)}
                     className="inline-block bg-gray-900 text-white font-medium px-6 py-3 rounded-xl hover:bg-gray-800 transition"
                 >
-                    最初のレシピを登録
+                    最初の料理を登録
                 </button>
             ) : (
                 <button
@@ -46,10 +46,10 @@ export default function RecipeRegisterModal({ emptyState = false }: { emptyState
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h2 className="text-xl font-bold text-gray-900">レシピの追加</h2>
+                            <h2 className="text-xl font-bold text-gray-900">料理の追加</h2>
                             <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
@@ -69,7 +69,7 @@ export default function RecipeRegisterModal({ emptyState = false }: { emptyState
                             <form action={handleSubmit} className="flex flex-col gap-4">
                                 <div>
                                     <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
-                                        レシピ名 <span className="text-red-500">*</span>
+                                        料理名 <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -77,7 +77,7 @@ export default function RecipeRegisterModal({ emptyState = false }: { emptyState
                                         name="name"
                                         required
                                         placeholder="例: 肉じゃが"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 

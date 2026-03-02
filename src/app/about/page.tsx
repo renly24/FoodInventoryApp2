@@ -19,9 +19,9 @@ export default function AboutPage() {
             iconColor: 'bg-orange-100'
         },
         {
-            title: 'お気に入りレシピ',
+            title: 'お気に入り料理',
             emoji: '🍳',
-            description: '自慢のレシピを材料と一緒に保存。在庫と連携して、今あるもので何が作れるかを確認できます。',
+            description: '自慢の料理を材料と一緒に保存。在庫と連携して、今あるもので何が作れるかを確認できます。',
             color: 'bg-purple-50',
             borderColor: 'border-purple-100',
             iconColor: 'bg-purple-100'

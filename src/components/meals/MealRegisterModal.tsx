@@ -55,7 +55,7 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-xl font-bold text-gray-900">食事の記録</h2>
@@ -86,7 +86,7 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
                                         name="name"
                                         required
                                         placeholder="例: 肉じゃが定食"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -100,7 +100,7 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
                                         name="date"
                                         defaultValue={new Date().toISOString().slice(0, 16)}
                                         required
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 

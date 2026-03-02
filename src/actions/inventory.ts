@@ -3,18 +3,27 @@
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { inventoryItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-const DUMMY_USER_ID = 'dummy-user-123';
+import { auth } from '@/auth';
+
+async function getRequiredSession() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("認証が必要です");
+    }
+    return session.user.id;
+}
 
 // サーバーアクション: アイテム一覧の取得
 export async function getInventoryItems() {
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        return await db.select().from(inventoryItems).where(eq(inventoryItems.userId, DUMMY_USER_ID));
+        return await db.select().from(inventoryItems).where(eq(inventoryItems.userId, userId));
     } catch (error) {
         console.error("Failed to fetch inventory:", error);
         return [];
@@ -33,19 +42,38 @@ export async function addInventoryItem(formData: FormData) {
     const quantity = parseFloat(quantityStr);
 
     try {
+        const userId = await getRequiredSession();
         const { env } = await getCloudflareContext({ async: true });
         const db = createDb(env.DB);
 
-        await db.insert(inventoryItems).values({
-            id: crypto.randomUUID(),
-            userId: DUMMY_USER_ID,
-            name,
-            quantity,
-            unit: (formData.get('unit') as string) || '個',
-            price: formData.get('price') ? parseFloat(formData.get('price') as string) : null,
-            category: formData.get('category') as string,
-            memo: formData.get('memo') as string,
-        });
+        // 同じ名前のアイテムが既にあるか確認
+        const existingItems = await db.select().from(inventoryItems)
+            .where(and(
+                eq(inventoryItems.userId, userId),
+                eq(inventoryItems.name, name)
+            ));
+
+        if (existingItems.length > 0) {
+            // 既存アイテムがあれば個数を加算
+            await db.update(inventoryItems)
+                .set({
+                    quantity: sql`${inventoryItems.quantity} + ${quantity}`,
+                    updatedAt: new Date()
+                })
+                .where(eq(inventoryItems.id, existingItems[0].id));
+        } else {
+            // なければ新規作成
+            await db.insert(inventoryItems).values({
+                id: crypto.randomUUID(),
+                userId: userId,
+                name,
+                quantity,
+                unit: (formData.get('unit') as string) || '個',
+                price: formData.get('price') ? parseFloat(formData.get('price') as string) : null,
+                category: formData.get('category') as string,
+                memo: formData.get('memo') as string,
+            });
+        }
 
         // 成功時にキャッシュを破棄して画面を更新
         revalidatePath('/inventory');

@@ -55,7 +55,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-xl font-bold text-gray-900">買い物リストに追加</h2>
@@ -86,7 +86,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                         name="name"
                                         required
                                         placeholder="例: 牛乳、卵"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                     />
                                 </div>
 
@@ -99,11 +99,11 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                             type="number"
                                             id="quantity"
                                             name="quantity"
-                                            step="0.1"
+                                            step="0.5"
                                             min="0"
                                             required
                                             placeholder="例: 1"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                     <div>
@@ -116,7 +116,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                             name="unit"
                                             defaultValue="個"
                                             placeholder="例: 個, g"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                         <select
                                             id="category"
                                             name="category"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white text-gray-900 font-bold"
                                         >
                                             <option value="">選択なし</option>
                                             <option value="食品">食品</option>
@@ -148,7 +148,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                             name="expectedPrice"
                                             min="0"
                                             placeholder="例: 200"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 font-bold"
                                         />
                                     </div>
                                 </div>
@@ -162,7 +162,7 @@ export default function ShoppingRegisterModal({ emptyState = false }: { emptySta
                                         name="memo"
                                         rows={2}
                                         placeholder="特記事項があれば入力"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 resize-none"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 resize-none font-bold"
                                     ></textarea>
                                 </div>
 
