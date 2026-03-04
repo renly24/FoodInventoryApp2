@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { analyzeReceiptAction, saveReceiptItemsAction, ReceiptItem } from '@/actions/receipt';
+import { analyzeReceiptAction, saveReceiptItemsAction, saveMealReceiptAction, ReceiptItem } from '@/actions/receipt';
 
-export default function ReceiptScannerModal({ triggerType = 'icon' }: { triggerType?: 'icon' | 'full' }) {
+export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inventory' }: { triggerType?: 'icon' | 'full', mode?: 'inventory' | 'meal' }) {
     const [isOpen, setIsOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -69,7 +69,9 @@ export default function ReceiptScannerModal({ triggerType = 'icon' }: { triggerT
         setError(null);
 
         try {
-            const response = await saveReceiptItemsAction(results);
+            const response = mode === 'meal'
+                ? await saveMealReceiptAction(results)
+                : await saveReceiptItemsAction(results);
             if (response.success) {
                 handleClose();
                 router.refresh(); // 更新されたリストを反映
@@ -98,7 +100,7 @@ export default function ReceiptScannerModal({ triggerType = 'icon' }: { triggerT
                     onClick={() => setIsOpen(true)}
                     className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors"
                 >
-                    <span>🧾 レシートから在庫記録</span>
+                    <span>🧾 レシートから{mode === 'meal' ? '外食記録' : '在庫記録'}</span>
                 </button>
             )}
 
