@@ -49,7 +49,6 @@ export default async function ProfilePage() {
             </header>
 
             <ProfileForm
-                initialBudget={profile.monthlyBudget}
                 initialSpent={profile.totalSpent}
             />
 

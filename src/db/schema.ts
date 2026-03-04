@@ -9,7 +9,6 @@ export const users = sqliteTable('users', {
     emailVerified: integer('email_verified', { mode: 'timestamp' }),
     image: text('image'),
     password: text('password'),
-    monthlyBudget: real('monthly_budget').default(0).notNull(),
     totalSpent: real('total_spent').default(0).notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });

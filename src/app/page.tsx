@@ -7,6 +7,7 @@ import { getProfile } from '@/actions/users';
 import { auth } from '@/auth';
 import { SignIn } from '@/components/auth/AuthButtons';
 import LoginForm from '@/components/auth/LoginForm';
+import ReceiptScannerModal from '@/components/inventory/ReceiptScannerModal';
 
 // Next.jsのキャッシュを無効化して常に最新データを取得する
 export const dynamic = 'force-dynamic';
@@ -18,9 +19,11 @@ export default async function DashboardPage() {
 		return (
 			<main className="p-6 flex flex-col items-center justify-center min-h-[90vh] bg-white">
 				<div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
-					<div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white mx-auto shadow-2xl ring-8 ring-blue-50 mb-8 transform hover:scale-105 transition-transform duration-500">
-						<span className="text-5xl drop-shadow-lg">🥦</span>
-					</div>
+					<Link href="/about" className="inline-block group outline-none">
+						<div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white mx-auto shadow-2xl ring-8 ring-blue-50 mb-8 transform group-hover:scale-105 group-focus-visible:ring-blue-100 transition-all duration-500 pb-1">
+							<span className="text-5xl drop-shadow-lg group-hover:rotate-12 transition-transform duration-300">🥦</span>
+						</div>
+					</Link>
 					<h1 className="text-4xl font-black text-gray-900 tracking-tighter mb-3">Food Inventory</h1>
 					<p className="text-gray-500 font-medium">スマートな在庫管理でフードロスを削減</p>
 				</div>
@@ -59,10 +62,20 @@ export default async function DashboardPage() {
 								無料アカウントを作成
 							</Link>
 						</div>
+
+						<div className="text-center pt-6">
+							<Link
+								href="/about"
+								className="inline-flex items-center justify-center gap-1.5 text-gray-500 hover:text-blue-600 transition-colors font-bold text-sm bg-gray-50/50 py-2 px-4 rounded-full border border-gray-100/50 hover:bg-gray-100/80"
+							>
+								<span className="text-base">ℹ️</span>
+								アプリについて（特徴や使い方）
+							</Link>
+						</div>
 					</div>
 				</div>
 
-				<div className="mt-20 text-gray-300 text-[10px] font-bold tracking-[0.2em] uppercase">
+				<div className="mt-16 text-gray-300 text-[10px] font-bold tracking-[0.2em] uppercase">
 					&copy; 2024 Food Inventory App
 				</div>
 			</main>
@@ -116,34 +129,21 @@ export default async function DashboardPage() {
 				</div>
 			</header>
 
-			{/* 予算・支出サマリー */}
+			{/* 支出サマリー */}
 			{userProfile && (
-				<section className="mb-8 p-6 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl shadow-xl text-white overflow-hidden relative">
+				<section className="mb-8 p-6 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl shadow-xl text-white overflow-hidden relative border border-indigo-500/30">
 					<div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-					<div className="relative z-10">
-						<div className="flex justify-between items-end mb-4">
-							<div>
-								<p className="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">今月の支出状況</p>
-								<div className="flex items-baseline gap-2">
-									<span className="text-4xl font-extrabold">¥{userProfile.totalSpent?.toLocaleString() || 0}</span>
-									<span className="text-indigo-200 text-sm">/ ¥{userProfile.monthlyBudget?.toLocaleString() || 0}</span>
-								</div>
-							</div>
-							<div className="text-right">
-								<p className="text-indigo-100 text-[10px] font-bold uppercase mb-1">残り予算</p>
-								<p className={`text-xl font-bold ${(userProfile.monthlyBudget - userProfile.totalSpent) < 3000 ? 'text-orange-300' : 'text-green-300'}`}>
-									¥{(userProfile.monthlyBudget - userProfile.totalSpent).toLocaleString()}
-								</p>
-							</div>
-						</div>
+					<div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
 
-						{/* プログレスバー */}
-						<div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-							<div
-								className={`h-full rounded-full transition-all duration-1000 ${(userProfile.totalSpent / userProfile.monthlyBudget) > 0.9 ? 'bg-orange-400' : 'bg-green-400'
-									}`}
-								style={{ width: `${Math.min(100, (userProfile.totalSpent / (userProfile.monthlyBudget || 1)) * 100)}%` }}
-							></div>
+					<div className="relative z-10 flex flex-col items-center text-center">
+						<p className="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+							<span className="text-sm">💸</span>
+							今月のトータル支出
+						</p>
+						<div className="flex items-baseline gap-1">
+							<span className="text-5xl font-extrabold tracking-tight">
+								¥{userProfile.totalSpent?.toLocaleString() || 0}
+							</span>
 						</div>
 					</div>
 				</section>
@@ -199,9 +199,7 @@ export default async function DashboardPage() {
 			<section className="mt-10">
 				<h3 className="text-lg font-bold text-gray-800 mb-4">クイックアクション</h3>
 				<div className="flex flex-col gap-3">
-					<Link href="/inventory?action=register" className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">
-						<span>＋ 新しい在庫を追加</span>
-					</Link>
+					<ReceiptScannerModal triggerType="full" />
 					<Link href="/meals?action=register" className="flex items-center justify-center gap-2 w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
 						<span>📝 食事を記録する</span>
 					</Link>

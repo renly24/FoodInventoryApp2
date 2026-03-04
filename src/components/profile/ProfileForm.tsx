@@ -1,37 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { updateBudget, updateSpent, resetSpent } from '@/actions/users';
+import { updateSpent, resetSpent } from '@/actions/users';
 
 export default function ProfileForm({
-    initialBudget,
     initialSpent
 }: {
-    initialBudget: number;
     initialSpent: number;
 }) {
-    const [budget, setBudget] = useState(initialBudget);
     const [spent, setSpent] = useState(initialSpent);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    async function handleUpdateBudget(e: React.FormEvent) {
-        e.preventDefault();
-        setIsSaving(true);
-        setMessage(null);
-        try {
-            const result = await updateBudget(budget);
-            if ('error' in result) {
-                setMessage({ type: 'error', text: result.error || 'エラーが発生しました' });
-            } else {
-                setMessage({ type: 'success', text: '予算を更新しました' });
-            }
-        } catch (err) {
-            setMessage({ type: 'error', text: 'エラーが発生しました' });
-        } finally {
-            setIsSaving(false);
-        }
-    }
 
     async function handleUpdateSpent(e: React.FormEvent) {
         e.preventDefault();
@@ -79,30 +59,6 @@ export default function ProfileForm({
                 </div>
             )}
 
-            <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-xl">💰</span> 予算設定
-                </h3>
-                <form onSubmit={handleUpdateBudget} className="flex flex-col gap-4">
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">毎月の予算 (円)</label>
-                        <input
-                            type="number"
-                            value={budget}
-                            onChange={(e) => setBudget(Number(e.target.value))}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                        />
-                        <p className="mt-2 text-xs text-gray-500">毎月自動的にリセットはされませんが、基準額として表示されます。</p>
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition disabled:bg-gray-400"
-                    >
-                        予算を保存
-                    </button>
-                </form>
-            </section>
 
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
