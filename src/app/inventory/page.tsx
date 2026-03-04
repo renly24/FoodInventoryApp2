@@ -1,5 +1,7 @@
 import { getInventoryItems } from '@/actions/inventory';
+import Link from 'next/link';
 import InventoryRegisterModal from '@/components/inventory/InventoryRegisterModal';
+import ReceiptScannerModal from '@/components/inventory/ReceiptScannerModal';
 import InventoryListDisplay from '@/components/inventory/InventoryListDisplay';
 
 export const dynamic = 'force-dynamic'; // キャッシュを無効化して常に最新を取得
@@ -15,7 +17,10 @@ export default async function InventoryPage() {
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">在庫一覧</h1>
                     <p className="text-gray-500 mt-1 text-sm">現在のシステム上の在庫</p>
                 </div>
-                <InventoryRegisterModal />
+                <div className="flex gap-2">
+                    <ReceiptScannerModal triggerType="icon" />
+                    <InventoryRegisterModal />
+                </div>
             </div>
 
             {items.length === 0 ? (

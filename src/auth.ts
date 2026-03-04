@@ -59,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
         callbacks: {
             authorized({ auth, request: { nextUrl } }) {
                 const isLoggedIn = !!auth?.user;
-                const isPublicPage = ["/", "/register"].includes(nextUrl.pathname);
+                const isPublicPage = ["/", "/register", "/about"].includes(nextUrl.pathname);
 
                 if (isPublicPage) {
                     return true;

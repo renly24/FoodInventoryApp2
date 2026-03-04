@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.11.1",
+		"@google/genai": "^1.43.0",
 		"@opennextjs/cloudflare": "^1.17.1",
 		"bcryptjs": "^3.0.3",
 		"drizzle-orm": "^0.45.1",

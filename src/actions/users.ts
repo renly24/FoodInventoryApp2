@@ -41,24 +41,6 @@ export async function getProfile() {
     }
 }
 
-// 予算設定の更新
-export async function updateBudget(budget: number) {
-    try {
-        const userId = await getRequiredSession();
-        const { env } = await getCloudflareContext({ async: true });
-        const db = createDb(env.DB);
-
-        await db.update(users)
-            .set({ monthlyBudget: budget })
-            .where(eq(users.id, userId));
-
-        revalidatePath('/');
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to update budget:", error);
-        return { error: "予算の更新に失敗しました" };
-    }
-}
 
 // 使用額のリセット（月次等）
 export async function resetSpent() {

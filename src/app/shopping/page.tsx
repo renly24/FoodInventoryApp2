@@ -1,5 +1,7 @@
 import { getShoppingItems } from '@/actions/shopping';
+import Link from 'next/link';
 import ShoppingRegisterModal from '@/components/shopping/ShoppingRegisterModal';
+import ReceiptScannerModal from '@/components/inventory/ReceiptScannerModal';
 import ShoppingListDisplay from '@/components/shopping/ShoppingListDisplay';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +16,10 @@ export default async function ShoppingPage() {
                     <h1 className="text-3xl font-extrabold text-orange-900 tracking-tight">買い物リスト</h1>
                     <p className="text-orange-600 mt-1 text-sm font-medium">買う予定のアイテム</p>
                 </div>
-                <ShoppingRegisterModal />
+                <div className="flex gap-2">
+                    <ReceiptScannerModal triggerType="icon" />
+                    <ShoppingRegisterModal />
+                </div>
             </div>
 
             {items.length === 0 ? (
