@@ -3,7 +3,7 @@
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { meals, users } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
@@ -26,6 +26,20 @@ export async function getMeals() {
     } catch (error) {
         console.error("Failed to fetch meals:", error);
         return [];
+    }
+}
+
+export async function getMeal(id: string) {
+    try {
+        const userId = await getRequiredSession();
+        const { env } = await getCloudflareContext({ async: true });
+        const db = createDb(env.DB);
+
+        const result = await db.select().from(meals).where(and(eq(meals.id, id), eq(meals.userId, userId)));
+        return result.length > 0 ? result[0] : null;
+    } catch (error) {
+        console.error("Failed to fetch meal:", error);
+        return null;
     }
 }
 
