@@ -1,0 +1,1 @@
+ALTER TABLE `meals` ADD `expense` real DEFAULT 0 NOT NULL;

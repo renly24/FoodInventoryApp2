@@ -115,6 +115,7 @@ export const meals = sqliteTable('meals', {
     recipeId: text('recipe_id'), // 料理由来の場合の連携IDを追加
     name: text('name').notNull(), // mealNameから変更
     date: integer('date', { mode: 'timestamp' }).notNull(), // mealDateから変更
+    expense: real('expense').default(0).notNull(), // 外食等の支出記録用
     createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(), // 欠落していたので追加
 });
