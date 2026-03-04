@@ -2,7 +2,7 @@
 
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { meals } from '@/db/schema';
+import { meals, users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -33,6 +33,8 @@ export async function getMeals() {
 export async function addMeal(formData: FormData) {
     const name = formData.get('name') as string;
     const dateStr = formData.get('date') as string;
+    const expenseStr = formData.get('expense') as string;
+    const expense = expenseStr ? Number(expenseStr) : 0;
 
     if (!name || !dateStr) {
         return { error: "必須項目が入力されていません" };
@@ -48,7 +50,18 @@ export async function addMeal(formData: FormData) {
             userId: userId,
             name,
             date: new Date(dateStr),
+            expense,
         });
+
+        if (expense > 0) {
+            const userRows = await db.select().from(users).where(eq(users.id, userId));
+            if (userRows.length > 0) {
+                const currentSpent = userRows[0].totalSpent || 0;
+                await db.update(users)
+                    .set({ totalSpent: currentSpent + expense })
+                    .where(eq(users.id, userId));
+            }
+        }
 
         revalidatePath('/meals');
         revalidatePath('/');

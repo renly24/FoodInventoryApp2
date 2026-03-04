@@ -104,6 +104,20 @@ export default function MealRegisterModal({ emptyState = false }: { emptyState?:
                                     />
                                 </div>
 
+                                <div>
+                                    <label htmlFor="expense" className="block text-sm font-bold text-gray-700 mb-1">
+                                        支出・外食費 (円) <span className="text-gray-400 font-normal ml-1">任意</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="expense"
+                                        name="expense"
+                                        placeholder="例: 1500"
+                                        min="0"
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition text-gray-900 font-bold"
+                                    />
+                                </div>
+
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}

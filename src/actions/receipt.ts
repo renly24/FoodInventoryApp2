@@ -193,3 +193,45 @@ export async function saveReceiptItemsAction(items: ReceiptItem[]) {
         return { success: false, error: error instanceof Error ? error.message : '保存に失敗しました' };
     }
 }
+
+export async function saveMealReceiptAction(items: ReceiptItem[]) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const userId = session.user.id;
+        const { env } = await getCloudflareContext({ async: true });
+        const db = createDb(env.DB);
+
+        // 支出合計を算出して外食として記録
+        const receiptTotal = items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+
+        // （ダイナミックインポートなどで直接DB呼び出しのスキーマを解決）
+        const { meals, users } = await import('@/db/schema');
+
+        await db.insert(meals).values({
+            id: crypto.randomUUID(),
+            userId: userId,
+            name: "外食 (レシート読取)",
+            date: new Date(),
+            expense: receiptTotal,
+        });
+
+        if (receiptTotal > 0) {
+            const userRows = await db.select().from(users).where(eq(users.id, userId));
+            if (userRows.length > 0) {
+                const currentSpent = userRows[0].totalSpent || 0;
+                await db.update(users)
+                    .set({ totalSpent: currentSpent + receiptTotal })
+                    .where(eq(users.id, userId));
+            }
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to save meal receipt:', error);
+        return { success: false, error: error instanceof Error ? error.message : '保存に失敗しました' };
+    }
+}
