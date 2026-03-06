@@ -121,7 +121,7 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[95vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -157,7 +157,6 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
                                             accept="image/*"
                                             className="hidden"
                                             onChange={handleFileChange}
-                                            capture="environment"
                                         />
                                     </label>
                                     <p className="text-xs text-gray-400 font-medium">JPG, PNG等のフォーマットに対応</p>

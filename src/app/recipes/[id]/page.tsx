@@ -1,7 +1,9 @@
-import { getRecipe, getRecipeIngredients } from '@/actions/recipes';
+import { getRecipe, getRecipeIngredients, deleteRecipe, editRecipeName } from '@/actions/recipes';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import RecipeIngredientRegisterModal from '@/components/recipes/RecipeIngredientRegisterModal';
+import DeleteButton from '@/components/common/DeleteButton';
+import EditableTitle from '@/components/common/EditableTitle';
 
 
 export const dynamic = 'force-dynamic';
@@ -24,9 +26,21 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                 </Link>
                 <div className="flex justify-between items-end">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-purple-900 tracking-tight">{recipe.name}</h1>
+                        <EditableTitle
+                            id={recipe.id}
+                            initialTitle={recipe.name}
+                            action={editRecipeName}
+                            placeholder="料理名"
+                        />
                         <p className="text-purple-600 mt-1 text-sm font-medium">料理詳細と必要な材料</p>
                     </div>
+                    <DeleteButton
+                        id={recipe.id}
+                        action={deleteRecipe}
+                        redirectUrl="/recipes"
+                        confirmMessage="この料理を削除しますか？\n紐づいている材料もすべて削除されます。\n（この操作は取り消せません）"
+                        label="料理を削除"
+                    />
                 </div>
             </div>
 

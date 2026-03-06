@@ -3,7 +3,7 @@
 import { createDb } from '@/db';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { recipes, recipeIngredients } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
@@ -113,5 +113,49 @@ export async function addRecipeIngredient(formData: FormData) {
     } catch (error) {
         console.error("Failed to add recipe ingredient:", error);
         return { error: "材料の追加に失敗しました" };
+    }
+}
+
+export async function deleteRecipe(id: string) {
+    try {
+        const userId = await getRequiredSession();
+        const { env } = await getCloudflareContext({ async: true });
+        const db = createDb(env.DB);
+
+        // レシピを削除（recipeIngredientsは外部キー制約 onDelete: 'cascade' により自動削除される）
+        await db.delete(recipes).where(and(eq(recipes.id, id), eq(recipes.userId, userId)));
+
+        revalidatePath('/recipes');
+        revalidatePath('/');
+
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete recipe:", error);
+        return { error: "料理の削除に失敗しました" };
+    }
+}
+
+export async function editRecipeName(id: string, newName: string) {
+    if (!newName || newName.trim() === '') {
+        return { error: "タイトルが入力されていません" };
+    }
+
+    try {
+        const userId = await getRequiredSession();
+        const { env } = await getCloudflareContext({ async: true });
+        const db = createDb(env.DB);
+
+        await db.update(recipes)
+            .set({ name: newName })
+            .where(and(eq(recipes.id, id), eq(recipes.userId, userId)));
+
+        revalidatePath(`/recipes/${id}`);
+        revalidatePath('/recipes');
+        revalidatePath('/');
+
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update recipe name:", error);
+        return { error: "料理名の更新に失敗しました" };
     }
 }

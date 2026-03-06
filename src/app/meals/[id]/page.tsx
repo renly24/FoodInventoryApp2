@@ -1,6 +1,8 @@
-import { getMeal } from '@/actions/meals';
+import { getMeal, deleteMeal, editMealName } from '@/actions/meals';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import DeleteButton from '@/components/common/DeleteButton';
+import EditableTitle from '@/components/common/EditableTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,9 +26,21 @@ export default async function MealDetailPage({ params }: { params: Promise<{ id:
                 </Link>
                 <div className="flex justify-between items-end">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-purple-900 tracking-tight">{meal.name}</h1>
+                        <EditableTitle
+                            id={meal.id}
+                            initialTitle={meal.name}
+                            action={editMealName}
+                            placeholder="食事記録のタイトル"
+                        />
                         <p className="text-purple-600 mt-1 text-sm font-medium">食事記録の詳細</p>
                     </div>
+                    <DeleteButton
+                        id={meal.id}
+                        action={deleteMeal}
+                        redirectUrl="/meals"
+                        confirmMessage="この食事記録を削除しますか？\n（支出額も元に戻ります）"
+                        label="記録を削除"
+                    />
                 </div>
             </div>
 
