@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { analyzeReceiptAction, saveReceiptItemsAction, saveMealReceiptAction, ReceiptItem } from '@/actions/receipt';
+import { analyzeReceiptAction, saveReceiptItemsAction, saveMealReceiptAction, saveRecipeReceiptAction, ReceiptItem } from '@/actions/receipt';
 
-export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inventory' }: { triggerType?: 'icon' | 'full', mode?: 'inventory' | 'meal' }) {
+export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inventory', recipeId }: { triggerType?: 'icon' | 'full', mode?: 'inventory' | 'meal' | 'recipe', recipeId?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -12,7 +12,20 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
     const [results, setResults] = useState<ReceiptItem[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [title, setTitle] = useState('');
     const router = useRouter();
+
+    const handleItemChange = (index: number, field: keyof ReceiptItem, value: any) => {
+        if (!results) return;
+        const newResults = [...results];
+        newResults[index] = { ...newResults[index], [field]: value };
+        setResults(newResults);
+    };
+
+    const handleRemoveItem = (index: number) => {
+        if (!results) return;
+        setResults(results.filter((_, i) => i !== index));
+    };
 
     const resetState = () => {
         setFile(null);
@@ -21,6 +34,7 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
         setResults(null);
         setError(null);
         setIsSaving(false);
+        setTitle('');
     };
 
     const handleClose = () => {
@@ -48,7 +62,7 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
             const formData = new FormData();
             formData.append('receipt', file);
 
-            const response = await analyzeReceiptAction(formData);
+            const response = await analyzeReceiptAction(formData, mode);
 
             if (response.success && response.data) {
                 setResults(response.data);
@@ -70,8 +84,10 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
 
         try {
             const response = mode === 'meal'
-                ? await saveMealReceiptAction(results)
-                : await saveReceiptItemsAction(results);
+                ? await saveMealReceiptAction(results, title)
+                : mode === 'recipe' && recipeId
+                    ? await saveRecipeReceiptAction(results, recipeId, title)
+                    : await saveReceiptItemsAction(results);
             if (response.success) {
                 handleClose();
                 router.refresh(); // 更新されたリストを反映
@@ -90,22 +106,22 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
             {triggerType === 'icon' ? (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center justify-center gap-1.5 bg-blue-50 text-blue-600 font-bold py-2 px-3 lg:px-4 rounded-xl hover:bg-blue-100 transition-colors shadow-sm text-sm"
+                    className={`flex items-center justify-center gap-1.5 font-bold py-2 px-3 lg:px-4 rounded-xl transition-colors shadow-sm text-sm ${mode === 'recipe' ? 'bg-purple-50 text-purple-600 hover:bg-purple-100' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
                 >
-                    <span className="text-lg">🧾</span>
-                    <span className="hidden lg:inline">レシート入力</span>
+                    <span className="text-lg">{mode === 'recipe' ? '📷' : '🧾'}</span>
+                    <span className="hidden lg:inline">{mode === 'recipe' ? '画像から読取' : 'レシート入力'}</span>
                 </button>
             ) : (
                 <button
                     onClick={() => setIsOpen(true)}
                     className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors"
                 >
-                    <span>🧾 レシートから{mode === 'meal' ? '外食記録' : '在庫記録'}</span>
+                    <span>{mode === 'recipe' ? '📷 画像から材料を読み取る' : `🧾 レシートから${mode === 'meal' ? '外食記録' : '在庫記録'}`}</span>
                 </button>
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[95vh]">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -141,7 +157,6 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
                                             accept="image/*"
                                             className="hidden"
                                             onChange={handleFileChange}
-                                            capture="environment"
                                         />
                                     </label>
                                     <p className="text-xs text-gray-400 font-medium">JPG, PNG等のフォーマットに対応</p>
@@ -202,27 +217,68 @@ export default function ReceiptScannerModal({ triggerType = 'icon', mode = 'inve
                                         抽出結果
                                     </h2>
 
+                                    {(mode === 'meal' || mode === 'recipe') && results && (
+                                        <div className="mb-4 bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex-shrink-0">
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                                                {mode === 'recipe' ? '料理名' : 'タイトル'}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={title}
+                                                onChange={(e) => setTitle(e.target.value)}
+                                                placeholder={mode === 'recipe' ? '料理名を入力 (省略可)' : '外食 (レシート読取)'}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition font-bold bg-gray-50 hover:bg-white text-gray-900"
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="bg-gray-50 rounded-3xl p-4 border border-gray-200 shadow-inner flex-grow overflow-hidden flex flex-col">
                                         {results ? (
                                             <ul className="overflow-y-auto space-y-3 h-full pr-2 scrollbar-thin scrollbar-thumb-gray-300 min-h-[200px] max-h-[300px] md:max-h-none">
                                                 {results.map((item, index) => (
-                                                    <li key={index} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-blue-200 transition-colors group">
-                                                        <div className="min-w-0 pr-2">
-                                                            <p className="font-bold text-gray-900 text-lg truncate">{item.name}</p>
-                                                            {item.category && (
-                                                                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-500 rounded-md text-[10px] font-bold mt-1 uppercase tracking-wider">
-                                                                    {item.category}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-col items-end shrink-0 text-right">
-                                                            <span className="font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
-                                                                {item.quantity} 個
-                                                            </span>
-                                                            {item.price !== undefined && (
-                                                                <span className="text-sm text-gray-500 font-bold mt-2">
-                                                                    ¥{item.price.toLocaleString()}
-                                                                </span>
+                                                    <li key={index} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2 hover:border-blue-200 transition-colors group relative">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveItem(index)}
+                                                            className="absolute -top-2 -right-2 bg-red-100 text-red-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-500 hover:text-white transition opacity-0 group-hover:opacity-100 shadow-sm z-10"
+                                                            title="この項目を削除"
+                                                        >✕</button>
+
+                                                        <input
+                                                            value={item.name}
+                                                            onChange={(e) => handleItemChange(index, 'name', e.target.value)}
+                                                            className="font-bold text-gray-900 text-base md:text-lg border-b border-transparent hover:border-gray-200 focus:border-blue-500 focus:outline-none w-full pb-1 transition-colors bg-transparent"
+                                                            placeholder="商品名・品目"
+                                                        />
+
+                                                        <div className="flex items-center justify-between mt-1">
+                                                            <div className="flex items-center bg-blue-50 rounded-xl overflow-hidden border border-blue-100">
+                                                                <button type="button" onClick={() => handleItemChange(index, 'quantity', Math.max(1, (item.quantity || 1) - 1))} className="px-3 py-1 font-bold text-blue-600 hover:bg-blue-100 active:bg-blue-200 transition-colors">-</button>
+                                                                <span className="font-black text-blue-800 w-8 text-center text-sm">{item.quantity}</span>
+                                                                <button type="button" onClick={() => handleItemChange(index, 'quantity', (item.quantity || 1) + 1)} className="px-3 py-1 font-bold text-blue-600 hover:bg-blue-100 active:bg-blue-200 transition-colors">+</button>
+                                                            </div>
+
+                                                            {mode === 'recipe' ? (
+                                                                <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100 hover:border-gray-200 transition hover:bg-white focus-within:border-blue-300 focus-within:bg-white flex-grow ml-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={item.unit || ''}
+                                                                        onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                                                                        className="w-full text-right text-gray-700 font-bold focus:outline-none bg-transparent"
+                                                                        placeholder="単位"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100 hover:border-gray-200 transition hover:bg-white focus-within:border-blue-300 focus-within:bg-white">
+                                                                    <span className="text-gray-400 font-bold text-sm">¥</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={item.price || 0}
+                                                                        onChange={(e) => handleItemChange(index, 'price', parseInt(e.target.value) || 0)}
+                                                                        className="w-16 text-right text-gray-700 font-bold focus:outline-none bg-transparent"
+                                                                    />
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </li>

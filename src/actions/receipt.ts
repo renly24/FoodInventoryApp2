@@ -20,6 +20,7 @@ const ai = new GoogleGenAI({
 export type ReceiptItem = {
     name: string;
     quantity: number;
+    unit?: string;
     price?: number;
     category?: string;
 };
@@ -41,52 +42,56 @@ export async function analyzeReceiptAction(formData: FormData): Promise<AnalyzeR
             return { success: false, error: '画像ファイルが見つかりません。' };
         }
 
-        // FileオブジェクトをBase64に変換する
         const buffer = await file.arrayBuffer();
         const base64Data = Buffer.from(buffer).toString('base64');
         const mimeType = file.type;
 
-        // Geminiモデルに解析をリクエスト
-        // レシートや画像解析には高速な gemini-3-flash-preview モデルを使用
+        const promptText = mode === 'recipe'
+            ? '提供された料理の材料リストやレシピ画像のテキストを解析し、必要な材料を抽出してください。「材料名（name）」「必要な数量（quantity）」「単位（unit: g、個、大さじなど）」を取得し、JSONの配列として出力してください。数量は数値にしてください（例: 数量 1）。'
+            : 'あなたは優秀なレシート入力アシスタントです。提供されたレシート画像のテキストを解析し、食品や日用品の項目を抽出してください。「商品名（name）」「数量（quantity）」「単価あるいは価格（price）」を取得し、可能であれば単位（unit: 個、gなど）も取得してください。JSONの配列として出力してください。数量や価格は数値にしてください（例: 数量 1, 価格 150）。割引や消費税などの項目は一品として除外してください。';
+
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: [
                 {
                     role: 'user',
                     parts: [
-                        { text: 'あなたは優秀なレシート入力アシスタントです。提供されたレシート画像のテキストを解析し、食品や日用品の項目を抽出してください。「商品名（name）」「数量（quantity）」「単価あるいは価格（price）」を取得し、JSONの配列として出力してください。数量や価格は数値にしてください（例: 数量 1, 価格 150）。割引や消費税などの項目は一品として除外してください。' },
+                        { text: promptText },
                         { inlineData: { data: base64Data, mimeType } }
                     ]
                 }
             ],
             config: {
-                // JSON形式で確実に返却させるための設定（Structured Outputs）
                 temperature: 0.1,
                 responseMimeType: 'application/json',
                 responseSchema: {
                     type: 'ARRAY',
-                    description: 'レシートから抽出された商品のリスト',
+                    description: mode === 'recipe' ? '抽出された材料のリスト' : 'レシートから抽出された商品のリスト',
                     items: {
                         type: 'OBJECT',
                         properties: {
                             name: {
                                 type: 'STRING',
-                                description: '商品の名前（例: 牛乳 1000ml, キャベツ）'
+                                description: mode === 'recipe' ? '材料名（例: 牛乳, キャベツ）' : '商品の名前（例: 牛乳 1000ml, キャベツ）'
                             },
                             quantity: {
-                                type: 'INTEGER',
-                                description: '購入個数'
+                                type: 'NUMBER',
+                                description: '数や量'
+                            },
+                            unit: {
+                                type: 'STRING',
+                                description: '単位（例: 個, g, ml, 束, 大さじ）'
                             },
                             price: {
                                 type: 'INTEGER',
-                                description: '商品の単価あるいは価格（税抜・税込はレシートの表記に従う）'
+                                description: '商品の単価あるいは価格'
                             },
                             category: {
                                 type: 'STRING',
-                                description: '推測される大まかなカテゴリ（例: 肉類, 野菜, 飲料）'
+                                description: '推測される大まかなカテゴリ'
                             }
                         },
-                        required: ['name', 'quantity', 'price']
+                        required: mode === 'recipe' ? ['name', 'quantity', 'unit'] : ['name', 'quantity', 'price']
                     }
                 }
             }
@@ -196,7 +201,7 @@ export async function saveReceiptItemsAction(items: ReceiptItem[]) {
     }
 }
 
-export async function saveMealReceiptAction(items: ReceiptItem[]) {
+export async function saveMealReceiptAction(items: ReceiptItem[], title?: string) {
     try {
         const session = await auth();
         if (!session?.user?.id) {
@@ -216,7 +221,7 @@ export async function saveMealReceiptAction(items: ReceiptItem[]) {
         await db.insert(meals).values({
             id: crypto.randomUUID(),
             userId: userId,
-            name: "外食 (レシート読取)",
+            name: (title && title.trim() !== '') ? title : "外食 (レシート読取)",
             date: new Date(),
             expense: receiptTotal,
         });
@@ -234,6 +239,38 @@ export async function saveMealReceiptAction(items: ReceiptItem[]) {
         return { success: true };
     } catch (error) {
         console.error('Failed to save meal receipt:', error);
+        return { success: false, error: error instanceof Error ? error.message : '保存に失敗しました' };
+    }
+}
+
+export async function saveRecipeReceiptAction(items: ReceiptItem[], recipeId: string, title?: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const { env } = await getCloudflareContext({ async: true });
+        const db = createDb(env.DB);
+        const { recipeIngredients, recipes } = await import('@/db/schema');
+
+        if (title && title.trim() !== '') {
+            await db.update(recipes).set({ name: title }).where(eq(recipes.id, recipeId));
+        }
+
+        for (const item of items) {
+            await db.insert(recipeIngredients).values({
+                id: crypto.randomUUID(),
+                recipeId,
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit || '個',
+            });
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to save recipe ingredients:', error);
         return { success: false, error: error instanceof Error ? error.message : '保存に失敗しました' };
     }
 }
