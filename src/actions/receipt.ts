@@ -31,7 +31,7 @@ export type AnalyzeReceiptResult = {
     error?: string;
 };
 
-export async function analyzeReceiptAction(formData: FormData): Promise<AnalyzeReceiptResult> {
+export async function analyzeReceiptAction(formData: FormData, mode?: 'inventory' | 'meal' | 'recipe'): Promise<AnalyzeReceiptResult> {
     if (!apiKey) {
         return { success: false, error: 'GEMINI_API_KEY が設定されていません。' };
     }
