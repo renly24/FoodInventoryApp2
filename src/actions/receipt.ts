@@ -11,8 +11,10 @@ import { eq, and } from "drizzle-orm";
 // 環境変数 GEMINI_API_KEY が必要です
 const { env } = await getCloudflareContext({ async: true });
 
+const apiKey = process.env.GEMINI_API_KEY || '';
+
 const ai = new GoogleGenAI({
-    apiKey: env.GEMINI_API_KEY || ''
+    apiKey
 });
 
 export type ReceiptItem = {
@@ -29,8 +31,8 @@ export type AnalyzeReceiptResult = {
     error?: string;
 };
 
-export async function analyzeReceiptAction(formData: FormData, mode: 'inventory' | 'meal' | 'recipe' = 'inventory'): Promise<AnalyzeReceiptResult> {
-    if (!env.GEMINI_API_KEY) {
+export async function analyzeReceiptAction(formData: FormData): Promise<AnalyzeReceiptResult> {
+    if (!apiKey) {
         return { success: false, error: 'GEMINI_API_KEY が設定されていません。' };
     }
 
